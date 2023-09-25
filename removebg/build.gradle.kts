@@ -53,14 +53,14 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("maven") {
-                groupId = "dev.eren"
-                artifactId = "removebg"
-                version = "1.0.2"
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "dev.eren"
+            artifactId = "removebg"
+            version = "1.0.2"
 
+            afterEvaluate {
                 from(components["release"])
             }
         }
