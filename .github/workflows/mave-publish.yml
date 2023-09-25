@@ -5,6 +5,8 @@ on:
     branches:
       - 'release/**'
 
+permissions: write-all
+
 jobs:
   publish:
     name: Release RemoveBg Library
