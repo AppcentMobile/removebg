@@ -56,7 +56,7 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            register("mavenJava", MavenPublication::class) {
+            register("main", MavenPublication::class) {
                 from(components["release"])
                 groupId = "dev.eren"
                 artifactId = "removebg"
