@@ -56,11 +56,21 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            register("main", MavenPublication::class) {
-                from(components["release"])
+            create<MavenPublication>("maven") {
                 groupId = "dev.eren"
                 artifactId = "removebg"
                 version = "1.0.0"
+
+                from(components["release"])
+
+                pom {
+                    packaging = "jar"
+                    name.set("removebg")
+                    scm {
+                        url.set("https://github.com/erenalpaslan/removebg")
+                    }
+                }
+
             }
         }
     }
