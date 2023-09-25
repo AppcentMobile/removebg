@@ -18,7 +18,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -53,16 +53,17 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 }
 
+
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "dev.eren"
-            artifactId = "removebg"
-            version = "1.0.2"
-
             afterEvaluate {
                 from(components["release"])
             }
+
+            groupId = "dev.eren"
+            artifactId = "removebg"
+            version = "1.0.2"
         }
     }
 }
