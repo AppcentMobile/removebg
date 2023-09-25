@@ -59,18 +59,9 @@ afterEvaluate {
             create<MavenPublication>("maven") {
                 groupId = "dev.eren"
                 artifactId = "removebg"
-                version = "1.0.0"
+                version = "1.0.2"
 
                 from(components["release"])
-
-                pom {
-                    packaging = "jar"
-                    name.set("removebg")
-                    scm {
-                        url.set("https://github.com/erenalpaslan/removebg")
-                    }
-                }
-
             }
         }
     }
