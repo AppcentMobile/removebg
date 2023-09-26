@@ -5,6 +5,8 @@ on:
     branches:
       - 'release/**'
 
+permissions: write-all
+
 jobs:
   publish:
     name: Release RemoveBg Library
@@ -41,7 +43,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
+          tag_name: 1.0.2
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
