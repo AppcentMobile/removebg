@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,14 +61,21 @@ fun RemoveBackground() {
         mutableStateOf<Bitmap?>(null)
     }
 
+    val inputImage: MutableState<Bitmap> = remember {
+        mutableStateOf(BitmapFactory.decodeStream(context.assets.open("remove_test5.png")))
+    }
+
     var loading: Boolean by remember {
         mutableStateOf(true)
     }
 
+    var isReal: Boolean by remember {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(key1 = Unit) {
-        val bitmap = BitmapFactory.decodeStream(context.assets.open("remove_test.jpg"))
         val remover = RemoveBg(context)
-        remover.clearBackground(bitmap)
+        remover.clearBackground(inputImage.value)
             .onStart {
                 loading = true
             }
@@ -79,7 +89,8 @@ fun RemoveBackground() {
     Scaffold { paddingValues ->
         Column(modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
+            .padding(paddingValues)
+            .background(Color.White),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -88,9 +99,11 @@ fun RemoveBackground() {
             }
             if (outputImage.value != null) {
                 Image(
-                    bitmap = outputImage.value!!.asImageBitmap(),
+                    bitmap = if (!isReal) outputImage.value!!.asImageBitmap() else inputImage.value.asImageBitmap(),
                     contentDescription = "",
-                    Modifier.fillMaxWidth()
+                    Modifier.fillMaxWidth().clickable {
+                        isReal = !isReal
+                    }
                 )
             }
         }
