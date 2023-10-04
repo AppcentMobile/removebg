@@ -1,18 +1,25 @@
 package dev.eren.removebg
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -31,12 +38,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import dev.eren.removebg.ui.theme.RemovebgTheme
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 
+
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -61,50 +69,82 @@ fun RemoveBackground() {
         mutableStateOf<Bitmap?>(null)
     }
 
-    val inputImage: MutableState<Bitmap> = remember {
-        mutableStateOf(BitmapFactory.decodeStream(context.assets.open("remove_test5.png")))
+    val inputImage: MutableState<Bitmap?> = remember {
+        mutableStateOf(null)
     }
 
+    val pickMedia = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            if (uri != null) {
+                inputImage.value =
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+            } else {
+                Log.d("PhotoPicker", "No media selected")
+            }
+        })
+
     var loading: Boolean by remember {
-        mutableStateOf(true)
+        mutableStateOf(false)
     }
 
     var isReal: Boolean by remember {
         mutableStateOf(false)
     }
 
-    LaunchedEffect(key1 = Unit) {
-        val remover = RemoveBg(context)
-        remover.clearBackground(inputImage.value)
-            .onStart {
-                loading = true
-            }
-            .onCompletion {
-                loading = false
-            }.collect { output ->
-                outputImage.value = output
-            }
+    val remover = remember {
+        RemoveBg(context = context)
+    }
+
+    LaunchedEffect(key1 = inputImage.value) {
+        inputImage.value?.let { image ->
+            remover.clearBackground(image)
+                .onStart {
+                    loading = true
+                }
+                .onCompletion {
+                    loading = false
+                }.collect { output ->
+                    outputImage.value = output
+                }
+        }
     }
 
     Scaffold { paddingValues ->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .background(Color.White),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (loading) {
-                CircularProgressIndicator()
+        Box(modifier = Modifier.background(Color.White)) {
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxWidth()
+            ) {
+                Button(onClick = {
+                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }) {
+                    Text(text = "Open Gallery")
+                }
             }
-            if (outputImage.value != null) {
-                Image(
-                    bitmap = if (!isReal) outputImage.value!!.asImageBitmap() else inputImage.value.asImageBitmap(),
-                    contentDescription = "",
-                    Modifier.fillMaxWidth().clickable {
-                        isReal = !isReal
-                    }
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (loading) {
+                    CircularProgressIndicator()
+                }
+                if (outputImage.value != null && inputImage.value != null) {
+                    Image(
+                        bitmap = if (!isReal) outputImage.value!!.asImageBitmap() else inputImage.value!!.asImageBitmap(),
+                        contentDescription = "",
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                isReal = !isReal
+                            }
+                    )
+                }
             }
         }
     }

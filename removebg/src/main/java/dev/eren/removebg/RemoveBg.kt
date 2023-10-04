@@ -40,7 +40,8 @@ class RemoveBg(context: Context): Remover<Bitmap> {
     }
 
     override fun clearBackground(image: Bitmap): Flow<Bitmap?> = flow {
-        emit(removeBackground(image))
+        val mutableImage = image.copy(Bitmap.Config.ARGB_8888, true)
+        emit(removeBackground(mutableImage))
     }.flowOn(Dispatchers.IO)
 
     override fun getMaskedImage(input: Bitmap, mask: Bitmap): Bitmap {
